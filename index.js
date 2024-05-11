@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
@@ -30,13 +30,29 @@ async function run() {
   //  await client.connect();
   
    const volCollection = client.db('volDB').collection('volunteer');
+   const beCollection =  client.db('volDB').collection('beVolunteer');
   
    app.get('/volunteer',async(req,res)=>{
-    const cursor = volCollection.find();
+     const cursor = volCollection.find();
     const result = await cursor.toArray();
     res.send(result);
    })
   
+   app.get('/volunteer/:id',async(req,res)=>{
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id) }
+    const options = {
+      
+      sort: { "time": -1 },
+      // Include only the `title` and `imdb` fields in the returned document
+      projection: { title: 1, description: 1, location: 1 ,time: 1 ,category: 1 ,name: 1 ,email: 1 ,photo: 1,volunt:1 },
+    };
+
+    const result = await volCollection.findOne(query,options);
+    res.send(result);
+  })
+
+
    app.post('/volunteer',async(req,res)=>{
     const newVol = req.body;
     console.log(newVol);
@@ -44,6 +60,13 @@ async function run() {
     res.send(result);
   })
 
+  //beVolenteer
+  app.post('/beVolunteer',async(req,res)=>{
+    const beVolunteers = req.body;
+  console.log(beVolunteers);
+  const result = await beCollection.insertOne(beVolunteers);
+  res.send(result)
+  })
 
    
   // Send a ping to confirm a successful connection
