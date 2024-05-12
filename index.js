@@ -37,6 +37,13 @@ async function run() {
     const result = await cursor.toArray();
     res.send(result);
    })
+
+   
+  //  app.get('/volunteer',async(req,res)=>{
+  //   const cursor = volCollection.find();
+  //  const result = await cursor.toArray();
+  //  res.send(result);
+  // })
   
    app.get('/volunteer/:id',async(req,res)=>{
     const id = req.params.id;
@@ -61,6 +68,16 @@ async function run() {
   })
 
   //beVolenteer
+app.get('/beVolunteer',async(req,res)=>{
+  console.log(req.query.email1);
+  let query ={};
+ if(req.query?.email1){
+  query = {email1 : req.query.email1}
+ }
+  const result = await beCollection.find(query).toArray();
+  res.send(result);
+})
+
   app.post('/beVolunteer',async(req,res)=>{
     const beVolunteers = req.body;
   console.log(beVolunteers);
