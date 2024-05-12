@@ -69,10 +69,10 @@ async function run() {
 
   //beVolenteer
 app.get('/beVolunteer',async(req,res)=>{
-  console.log(req.query.email1);
+  console.log(req.query.email);
   let query ={};
- if(req.query?.email1){
-  query = {email1 : req.query.email1}
+ if(req.query?.email){
+  query = {email : req.query.email}
  }
   const result = await beCollection.find(query).toArray();
   res.send(result);
@@ -85,7 +85,56 @@ app.get('/beVolunteer',async(req,res)=>{
   res.send(result)
   })
 
+  app.get("/update/:id",async(req,res)=>{
+    // console.log(req.params.id);
+    const id = req.params.id;
+    const query = {_id:new ObjectId(id)}
+    const result = await volCollection.findOne(query)
+    console.log(result);
+    res.send(result);
+  })
+
+  app.put("/updateTour/:id",async(req,res)=>{
+    console.log(req.params.id);
+    const query = {_id: new ObjectId(req.params.id)};
+    const data ={
+      $set:{
+        title:req.body.title,
+        description:req.body.description,
+        volunt:req.body.volunt,
+        location:req.body.location,
+        time:req.body.time,
+        category:req.body.category,
+        photo:req.body.photo,
+      }
+    }
+    const result =await volCollection.updateOne(query,data);
+    console.log(result);
+    res.send(result)
+  })
+     
    
+
+  app.delete('/beVolunteer/:id',async(req,res)=>{
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)}
+    const result = await beCollection.deleteOne(query);
+    res.send(result);
+  })
+
+
+  app.get("/involunteer/:email",  async(req,res)=>{
+    console.log(req.params.email);
+    const result =await volCollection.find({ email: req.params.email }).toArray();
+  console.log(result);
+    res.send(result)
+  })
+
+  app.delete("/delete/:id",async(req,res)=>{
+    const result = await volCollection.deleteOne({_id:new ObjectId(req.params.id)})
+    console.log(result);
+    res.send(result)
+  })
   // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
