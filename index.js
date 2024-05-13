@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
@@ -16,6 +17,7 @@ credentials:true
 
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 
 console.log(process.env.DB_USER);
@@ -30,6 +32,30 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+//middleware
+const looger = (req,res,next)=>{
+console.log('log info',req.method , req.url);
+next();
+
+};
+
+const verifyToken = (req,res,next)=>{
+  const token = req?.cookies?.token;
+  // console.log('token in middle ware',token);
+  if(!token){
+    return res.status(401).send({massage: 'unauthorized access'})
+  }
+  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+
+    if(err){
+      return res.status(401).send({massage:'unsuthorized'})
+    }
+    req.user = decoded;
+    next();
+  })
+//  next();
+
+}
 
 async function run() {
   try {
@@ -41,7 +67,7 @@ async function run() {
    const beCollection =  client.db('volDB').collection('beVolunteer');
   
 //auth related api
-app.post('/jwt',async(req,res)=>{
+app.post('/jwt',looger,async(req,res)=>{
 const user = req.body;
 console.log("user for token",user);
 const token = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:'2h'})
@@ -54,7 +80,7 @@ res.cookie('token',token,{
 
 })
 
-app.post('/logout',async(req,res)=>{
+app.post('/logout',looger,async(req,res)=>{
   const user = req.body;
   console.log('loging out',user);
   res.clearCookie('token',{maxAge: 0}).send({success:true})
@@ -98,8 +124,12 @@ app.post('/logout',async(req,res)=>{
   })
 
   //beVolenteer
-app.get('/beVolunteer',async(req,res)=>{
+app.get('/beVolunteer',looger,verifyToken,async(req,res)=>{
   console.log(req.query.email);
+  console.log("token owner",req.user);
+  // if(req.user.email!== req.query.email){
+  //   return res.status(403).send({massage:'forbidden access'})
+  // }
   let query ={};
  if(req.query?.email){
   query = {email : req.query.email}
