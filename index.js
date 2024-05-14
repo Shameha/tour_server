@@ -106,9 +106,10 @@ app.post('/logout',looger,async(req,res)=>{
     const query = {_id: new ObjectId(id) }
     const options = {
       
-      sort: { "time": -1 },
+      
       // Include only the `title` and `imdb` fields in the returned document
       projection: { title: 1, description: 1, location: 1 ,time: 1 ,category: 1 ,name: 1 ,email: 1 ,photo: 1,volunt:1 },
+
     };
 
     const result = await volCollection.findOne(query,options);
@@ -120,6 +121,24 @@ app.post('/logout',looger,async(req,res)=>{
     const newVol = req.body;
     console.log(newVol);
     const result = await volCollection.insertOne(newVol);
+    res.send(result);
+  })
+
+  app.get('/avolunteer',async(req,res)=>{
+    console.log(req.query.id);
+    // console.log("token owner",req.user);
+    // if(req.user.email!== req.query.email){
+    //   return res.status(403).send({massage:'forbidden access'})
+    // }
+    const sort = req.query.sort;
+    let query ={};
+   if(req.query?.id){
+    query = {id : req.query.id},
+    sort={"time": -1 },
+    $inc={"volunt": -1}
+         
+   }
+    const result = await volCollection.find(query,sort,$inc).toArray();
     res.send(result);
   })
 
