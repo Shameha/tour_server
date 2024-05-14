@@ -10,7 +10,7 @@ const port = process.env.PORT || 5000;
 //middleware
 app.use(cors({
 origin:[
-'http://localhost:5173',
+'http://localhost:5173','https://assingment11-febfd.web.app','https://assingment11-febfd.firebaseapp.com'
 
 ],
 credentials:true
@@ -55,7 +55,13 @@ const verifyToken = (req,res,next)=>{
   })
 //  next();
 
-}
+};
+
+const cookieOption = {
+  httpOnly:true,
+  sameSite:process.env.NODE_ENV === "production"? "none" : "strict",
+  secure:process.env.NODE_ENV === "production"? true : false,
+};
 
 async function run() {
   try {
@@ -71,11 +77,7 @@ app.post('/jwt',looger,async(req,res)=>{
 const user = req.body;
 console.log("user for token",user);
 const token = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:'2h'})
-res.cookie('token',token,{
-  httpOnly:true,
-  secure:true,
-  sameSite: 'none'
-})
+res.cookie('token',token,cookieOption)
 .send({success:true})
 
 })
@@ -83,7 +85,7 @@ res.cookie('token',token,{
 app.post('/logout',looger,async(req,res)=>{
   const user = req.body;
   console.log('loging out',user);
-  res.clearCookie('token',{maxAge: 0}).send({success:true})
+  res.clearCookie('token',{...cookieOption , maxAge: 0}).send({success:true})
 })
 
 
