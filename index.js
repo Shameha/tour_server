@@ -230,8 +230,8 @@ run().catch(console.dir);
 app.get('/',(req,res) =>{
     res.send('volenteear is running')
 })
-
+app.post('/')
 
 app.listen(port,()=>{
     console.log(`volenteear ${port}`);
-})
+});
